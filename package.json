@@ -2,7 +2,13 @@
   "name": "auto-install",
   "version": "1.7.3",
   "description": "Auto installs dependencies as you code",
-  "keywords": "auto, dependencies, install, package, watch",
+  "keywords": [
+    "auto",
+    "dependencies",
+    "install",
+    "package",
+    "watch"
+  ],
   "homepage": "https://github.com/siddharthkp/auto-install#readme",
   "repository": "siddharthkp/auto-install",
   "license": "MIT",
