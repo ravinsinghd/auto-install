@@ -50,11 +50,11 @@ let getInstalledModules = () => {
 /* Get all js files
  * Return path of all js files
  */
-let getFiles = () => glob.sync('**/*.js', {ignore: ['node_modules/**/*']});
+let getFiles = () => glob.sync('**/*.js', { ignore: ['node_modules/**/*'] });
 
 /* Check for valid string - to stop malicious intentions */
 
-let isValidModule = ({name}) => {
+let isValidModule = ({ name }) => {
     let regex = new RegExp('^([a-z0-9-_]{1,})$');
     return regex.test(name);
 };
@@ -67,9 +67,9 @@ let getModulesFromFile = (path) => {
     let content = fs.readFileSync(path, 'utf8');
     let modules = [];
     try {
-        modules = detective(content, {parse: {sourceType: 'module'}});
+        modules = detective(content, { parse: { sourceType: 'module' } });
 
-        let es6modules = es6detective(content, {parse: {sourceType: 'module'}});
+        let es6modules = es6detective(content, { parse: { sourceType: 'module' } });
         modules = modules.concat(es6modules);
 
         modules = modules.filter((module) => isValidModule(module));
@@ -88,7 +88,7 @@ let isTestFile = (name) => (name.endsWith('.spec.js') || name.endsWith('.test.js
 /* Dedup similar modules
  * Deduplicates list
  * Ignores/assumes type of the modules in list
-*/
+ */
 
 let deduplicateSimilarModules = (modules) => {
     let dedupedModules = [];
@@ -125,13 +125,19 @@ let deduplicate = (modules) => {
  * Read all .js files and grep for modules
  */
 
-let getUsedModules = () => {
-    let files = getFiles();
+let getUsedModules = (filePath) => {
+    let files = [];
+    if (filePath) {
+        files = [filePath];
+    } else {
+        files = getFiles();
+    }
+    console.log(files);
     let usedModules = [];
     for (let fileName of files) {
         let modulesFromFile = getModulesFromFile(fileName);
         let dev = isTestFile(fileName);
-        for (let name of modulesFromFile) usedModules.push({name, dev});
+        for (let name of modulesFromFile) usedModules.push({ name, dev });
     }
     usedModules = deduplicate(usedModules);
     return usedModules;
@@ -228,7 +234,7 @@ let getInstallCommand = (name, dev) => {
  * Install given module
  */
 
-let installModule = ({name, dev}) => {
+let installModule = ({ name, dev }) => {
     let spinner = startSpinner(`Installing ${name}`, 'green');
 
     let command = getInstallCommand(name, dev);
@@ -247,10 +253,10 @@ let isScopedModule = (name) => name[0] === '@';
 
 /* Install module if author is trusted */
 
-let installModuleIfTrustedAuthor = ({name, dev}) => {
+let installModuleIfTrustedAuthor = ({ name, dev }) => {
     let trustedAuthor = argv['trust-author'];
     packageJson(name).then(json => {
-        if (json.author && json.author.name === trustedAuthor) installModule({name, dev});
+        if (json.author && json.author.name === trustedAuthor) installModule({ name, dev });
         else console.log(colors.red(`${name} not trusted`));
     });
 };
@@ -259,15 +265,15 @@ let installModuleIfTrustedAuthor = ({name, dev}) => {
  * Call isModulePopular before installing
  */
 
-let installModuleIfTrusted = ({name, dev}) => {
+let installModuleIfTrusted = ({ name, dev }) => {
     // Trust scoped modules
-    if (isScopedModule(name)) installModule({name, dev});
+    if (isScopedModule(name)) installModule({ name, dev });
     else {
         isModulePopular(name, (popular) => {
             // Popular as proxy for trusted
-            if (popular) installModule({name, dev});
+            if (popular) installModule({ name, dev });
             // Trusted Author
-            else if (argv['trust-author']) installModuleIfTrustedAuthor({name, dev});
+            else if (argv['trust-author']) installModuleIfTrustedAuthor({ name, dev });
             // Not trusted
             else console.log(colors.red(`${name} not trusted`));
         });
@@ -293,7 +299,7 @@ let getUninstallCommand = (name) => {
 
 /* Uninstall module */
 
-let uninstallModule = ({name, dev}) => {
+let uninstallModule = ({ name, dev }) => {
     if (dev) return;
 
     let command = getUninstallCommand(name);
@@ -328,9 +334,9 @@ let removeFilePaths = (modules) => {
 
 let filterRegistryModules = (modules) => removeBuiltInModules(
     removeFilePaths(
-    removeLocalFiles(
-        modules
-    )));
+        removeLocalFiles(
+            modules
+        )));
 
 /* Get module names from array of module objects */
 
@@ -373,4 +379,3 @@ module.exports = {
     cleanup,
     packageJSONExists
 };
-

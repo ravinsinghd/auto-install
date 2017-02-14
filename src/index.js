@@ -25,7 +25,7 @@ let initializeWatchers = () => {
         ignored: 'node_modules'
     });
     watcher.on('change', main)
-    .on('unlink', main);
+        .on('unlink', main);
 
     watchersInitialized = true;
     console.log('Watchers initialized');
@@ -37,9 +37,10 @@ let initializeWatchers = () => {
  * Install used modules that are not installed
  * Remove installed modules that are not used
  * After setup, initialize watchers
+ * optional parameter for accept changed filepath from filewatcher
  */
 
-main = () => {
+main = (filePath) => {
     if (!helpers.packageJSONExists()) {
         console.log(colors.red('package.json does not exist'));
         console.log(colors.red('You can create one by using `npm init`'));
@@ -47,9 +48,12 @@ main = () => {
     }
 
     let installedModules = [];
+    let usedModules = [];
     installedModules = helpers.getInstalledModules();
 
-    let usedModules = helpers.getUsedModules();
+    if (filePath) usedModules = helpers.getUsedModules(filePath);
+    else usedModules = helpers.getUsedModules();
+
     usedModules = helpers.filterRegistryModules(usedModules);
 
     // removeUnusedModules
@@ -73,4 +77,3 @@ main = () => {
 
 /* Turn the key */
 main();
-
