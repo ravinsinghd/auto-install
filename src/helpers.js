@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const glob = require('glob');
 const isBuiltInModule = require('is-builtin-module');
 const syncExec = require('sync-exec');
@@ -74,7 +75,7 @@ let getModulesFromFile = (path) => {
 
         modules = modules.filter((module) => isValidModule(module));
     } catch (err) {
-        console.log(colors.red(`Could not parse ${path}. There is a syntax error in file`));
+        console.log(colors.red(`Could not parse ${path}. There is a syntax error in file ${err}`));
     }
     return modules;
 };
@@ -127,19 +128,17 @@ let deduplicate = (modules) => {
 
 let getUsedModules = (filePath) => {
     let files = [];
-    if (filePath) {
-        files = [filePath];
-    } else {
-        files = getFiles();
-    }
-    console.log(files);
+
+    if (filePath) files.push(filePath);
+    else files = getFiles();
+
     let usedModules = [];
+
     for (let fileName of files) {
         let modulesFromFile = getModulesFromFile(fileName);
         let dev = isTestFile(fileName);
-        for (let name of modulesFromFile) usedModules.push({ name, dev });
+        for (let name of modulesFromFile) usedModules.push({ name, dev, fileName });
     }
-    usedModules = deduplicate(usedModules);
     return usedModules;
 };
 
@@ -366,6 +365,13 @@ let cleanup = () => {
 
 let packageJSONExists = () => fs.existsSync('package.json');
 
+
+let isSamePath = (path1, path2) => {
+    path1 = path.normalize(path1);
+    path2 = path.normalize(path2);
+    return path1 === path2;
+}
+
 /* Public helper functions */
 
 module.exports = {
@@ -377,5 +383,6 @@ module.exports = {
     uninstallModule,
     diff,
     cleanup,
-    packageJSONExists
+    packageJSONExists,
+    isSamePath
 };
