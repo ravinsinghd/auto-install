@@ -372,6 +372,15 @@ let isSamePath = (path1, path2) => {
     return path1 === path2;
 }
 
+let moduleUsedByOtherFiles = ({ name, dev, fileName }, modulesWithFilePath, exceptionFile) => {
+    return modulesWithFilePath
+        .filter(module => module.fileName !== exceptionFile)
+        .filter(module => module.name === name)
+        .length > 0;
+
+}
+
+
 /* Public helper functions */
 
 module.exports = {
@@ -384,5 +393,7 @@ module.exports = {
     diff,
     cleanup,
     packageJSONExists,
-    isSamePath
+    isSamePath,
+    deduplicate,
+    moduleUsedByOtherFiles
 };

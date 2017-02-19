@@ -62,7 +62,8 @@ main = () => {
 
     // installModules
     let modulesNotInstalled = helpers.diff(usedModules, installedModules);
-    usedModules = deduplicate(usedModules);
+    modulesNotInstalled = helpers.deduplicate(modulesNotInstalled);
+
 
     for (let module of modulesNotInstalled) {
         if (secureMode) helpers.installModuleIfTrusted(module);
@@ -74,6 +75,7 @@ main = () => {
 };
 
 watchParse = (currentModules, modifiedFilePath) => {
+    console.log(currentModules);
     let unusedModules;
     let modulesNotInstalled;
 
@@ -83,11 +85,16 @@ watchParse = (currentModules, modifiedFilePath) => {
     // removeUnusedModules
     if (uninstallMode) {
         unusedModules = helpers.diff(modulesBeforeFileChange, modulesAfterFileChange);
+        unusedModules.filter(module => !helpers.moduleUsedByOtherFiles(module, currentModules, modifiedFilePath))
+            .map(module => helpers.uninstallModule(module));
     }
     modulesNotInstalled = helpers.diff(modulesAfterFileChange, modulesBeforeFileChange);
+    modulesNotInstalled = helpers.deduplicate(modulesNotInstalled);
 
-    console.log(unusedModules);
-    console.log(modulesNotInstalled);
+    if (secureMode) modulesNotInstalled.map(module => helpers.installModuleIfTrusted(module));
+    else modulesNotInstalled.map(module => helpers.installModule(module));
+
+    currentModules = currentModules.concat(modulesNotInstalled);
 }
 
 /* Turn the key */
